@@ -1,0 +1,20 @@
+// SQLite has no native enums, so the role column is a string.
+// Allowed values live in src/lib/constants.ts and are enforced by zod.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String // INVESTOR | OWNER
+  createdAt    DateTime @default(now())
+}
