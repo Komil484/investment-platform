@@ -6,3 +6,6 @@ export const ROLE_LABELS: Record<SignupRole, string> = {
   INVESTOR: "Investor",
   OWNER: "Project Owner",
 };
+
+export const PROJECT_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
+export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
