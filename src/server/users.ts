@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import type { RegisterInput } from "@/lib/validation";
+import type { LoginInput, RegisterInput } from "@/lib/validation";
 
 export class EmailTakenError extends Error {
   constructor() {
@@ -28,4 +28,11 @@ export async function registerUser(data: RegisterInput) {
     }
     throw err;
   }
+}
+
+// US-01 / FR-2: returns the user if the email and password match, otherwise null.
+export async function authenticate({ email, password }: LoginInput) {
+  const user = await db.user.findUnique({ where: { email } });
+  if (!user || !(await bcrypt.compare(password, user.passwordHash))) return null;
+  return { id: user.id, name: user.name, email: user.email, role: user.role };
 }

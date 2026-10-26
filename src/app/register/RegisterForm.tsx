@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { ROLE_LABELS, SIGNUP_ROLES } from "@/lib/constants";
 import { register, type RegisterState } from "./actions";
@@ -14,6 +15,9 @@ export function RegisterForm() {
       <div className="card p-6 text-center">
         <h2 className="text-lg font-semibold">Account created</h2>
         <p className="mt-2 text-sm text-slate-600">Welcome, {state.name}. Your account is ready.</p>
+        <Link href="/login" className="btn-primary mt-4">
+          Log in
+        </Link>
       </div>
     );
   }

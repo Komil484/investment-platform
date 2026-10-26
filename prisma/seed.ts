@@ -3,18 +3,19 @@ import bcrypt from "bcryptjs";
 
 const db = new PrismaClient();
 
-// Demo data for local development. Password for the demo owner: "password123"
+// Demo data for local development. Password for every demo account: "password123"
 async function main() {
-  const owner = await db.user.upsert({
-    where: { email: "owner@example.com" },
-    update: {},
-    create: {
-      email: "owner@example.com",
-      name: "Omar Owner",
-      role: "OWNER",
-      passwordHash: await bcrypt.hash("password123", 10),
-    },
-  });
+  const passwordHash = await bcrypt.hash("password123", 10);
+
+  const upsertUser = (email: string, name: string, role: string) =>
+    db.user.upsert({
+      where: { email },
+      update: {},
+      create: { email, name, role, passwordHash },
+    });
+
+  const owner = await upsertUser("owner@example.com", "Omar Owner", "OWNER");
+  await upsertUser("investor@example.com", "Ian Investor", "INVESTOR");
 
   // Fixed ids keep the demo URLs the same on every machine (see README).
   const projects = [
