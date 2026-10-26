@@ -24,7 +24,7 @@ A web platform that connects investors with project owners. Project owners publi
 | User registration | DEV-3 | Done |
 | Project details page | DEV-6 | Done |
 | User login | DEV-4 | Done |
-| Browse projects | DEV-5 | Planned |
+| Browse projects | DEV-5 | Done |
 | Create and edit projects | DEV-7, DEV-8 | Planned |
 | Submit and view proposals | DEV-9, DEV-10 | Planned |
 | Admin approval | DEV-11 | Planned |
@@ -60,7 +60,7 @@ npm run dev             # http://localhost:3000
 | Ian Investor | Investor | `investor@example.com` | `password123` |
 | Omar Owner | Project Owner | `owner@example.com` | `password123` |
 
-All three projects belong to Omar Owner.
+All three projects belong to Omar Owner. Only the two approved ones show up in the project list.
 
 ## Trying it out
 
@@ -88,6 +88,18 @@ To see the stored account, run `npx prisma studio` and open the **User** table. 
 6. Log in as `owner@example.com` to see the Project Owner role, or use the account you made in the step above.
 
 The login is kept in an httpOnly cookie called `session` for 7 days.
+
+### Browse projects
+
+1. Click **Projects** in the top bar, or **Browse projects** on the home page. This opens http://localhost:3000/projects.
+2. The page says "2 approved projects" and shows two cards:
+   - **Rooftop Solar for Small Businesses**: Energy, Approved, $120,000, 14%
+   - **Farm-to-Table Delivery App**: Agriculture, Approved, $45,000, 22.5%
+3. Each card shows a short version of the description. Long descriptions end with "…".
+4. **Coding Bootcamp for Teenagers** is not in the list, because it is still pending.
+5. Click a card to open that project's page. The **← All projects** link takes you back.
+
+The list works the same whether you are logged in or not.
 
 ### Open a project page
 

@@ -63,7 +63,7 @@ async function main() {
     });
   }
 
-  // There is no project list page yet (DEV-5), so print where to find each project.
+  console.log("Approved projects are listed at http://localhost:3000/projects");
   for (const p of await db.project.findMany({ orderBy: { createdAt: "asc" } })) {
     console.log(`${p.status.padEnd(8)} http://localhost:3000/projects/${p.id}  ${p.name}`);
   }
