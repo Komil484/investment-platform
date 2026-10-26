@@ -12,6 +12,7 @@ A web platform that connects investors with project owners. Project owners publi
 | Database | SQLite through [Prisma 6](https://www.prisma.io) |
 | Validation | zod |
 | Password hashing | bcryptjs |
+| Login sessions | Signed cookie (JWT) with jose |
 | Tests | Vitest |
 | Linting | ESLint (`next/core-web-vitals`) |
 | Runtime | Node.js 22 (pinned in `mise.toml`) |
@@ -22,7 +23,7 @@ A web platform that connects investors with project owners. Project owners publi
 | --- | --- | --- |
 | User registration | DEV-3 | Done |
 | Project details page | DEV-6 | Done |
-| User login | DEV-4 | Planned |
+| User login | DEV-4 | Done |
 | Browse projects | DEV-5 | Planned |
 | Create and edit projects | DEV-7, DEV-8 | Planned |
 | Submit and view proposals | DEV-9, DEV-10 | Planned |
@@ -37,7 +38,7 @@ You need Node.js 22 and npm. With [mise](https://mise.jdx.dev) installed, `mise 
 git clone git@github.com:Komil484/investment-platform.git
 cd investment-platform
 
-cp .env.example .env    # points Prisma at prisma/dev.db
+cp .env.example .env    # database path and the secret for login cookies
 npm install             # also generates the Prisma client
 npm run db:migrate      # creates prisma/dev.db and its tables
 npm run db:seed         # adds the demo data listed below
@@ -46,7 +47,7 @@ npm run dev             # http://localhost:3000
 
 ## Demo data
 
-`npm run db:seed` adds one project owner and three projects. It is safe to run more than once.
+`npm run db:seed` adds two demo accounts and three projects. You can run it more than once.
 
 | Project | Status | URL |
 | --- | --- | --- |
@@ -54,7 +55,12 @@ npm run dev             # http://localhost:3000
 | Farm-to-Table Delivery App | Approved | http://localhost:3000/projects/farm-to-table |
 | Coding Bootcamp for Teenagers | Pending | http://localhost:3000/projects/coding-bootcamp |
 
-All three belong to **Omar Owner** (`owner@example.com`, password `password123`). Login is not built yet, so this account is only there to own the projects.
+| Name | Role | Email | Password |
+| --- | --- | --- | --- |
+| Ian Investor | Investor | `investor@example.com` | `password123` |
+| Omar Owner | Project Owner | `owner@example.com` | `password123` |
+
+All three projects belong to Omar Owner.
 
 ## Trying it out
 
@@ -71,6 +77,17 @@ All three belong to **Omar Owner** (`owner@example.com`, password `password123`)
 5. Try invalid values to see the field errors: a one-letter name, an email without `@`, or a password shorter than 8 characters.
 
 To see the stored account, run `npx prisma studio` and open the **User** table. The password column holds a bcrypt hash, not the password itself.
+
+### Log in and out
+
+1. Click **Log in** in the top bar, or go to http://localhost:3000/login.
+2. Enter `investor@example.com` and a wrong password like `hello123`. You get "Wrong email or password." and stay logged out.
+3. Now use the right password, `password123`. You go to the home page, which says "You are logged in as **Ian Investor** (Investor)". The top bar shows the same name and role.
+4. While logged in, open `/login` or `/register`. Both send you back to the home page.
+5. Click **Log out** in the top bar. The home page shows the **Create an account** and **Log in** buttons again.
+6. Log in as `owner@example.com` to see the Project Owner role, or use the account you made in the step above.
+
+The login is kept in an httpOnly cookie called `session` for 7 days.
 
 ### Open a project page
 
