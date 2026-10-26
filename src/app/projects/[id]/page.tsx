@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatDate, formatMoney, formatPercent } from "@/lib/format";
@@ -17,7 +18,10 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
-      <article className="card p-6">
+      <Link href="/projects" className="text-sm text-slate-500 hover:text-slate-800">
+        ← All projects
+      </Link>
+      <article className="card mt-3 p-6">
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs font-medium tracking-wide text-emerald-700 uppercase">{project.category}</span>
           <StatusBadge status={project.status} />

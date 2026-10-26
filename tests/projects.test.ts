@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
-import { getApprovedProject } from "@/server/projects";
+import { truncate } from "@/lib/format";
+import { getApprovedProject, listApprovedProjects } from "@/server/projects";
 
 const project = (ownerId: string, status: string) => ({
   ownerId,
@@ -42,5 +43,44 @@ describe("getApprovedProject", () => {
 
   it("returns null for an unknown id", async () => {
     expect(await getApprovedProject("does-not-exist")).toBeNull();
+  });
+});
+
+describe("listApprovedProjects", () => {
+  it("only lists approved projects, newest first", async () => {
+    const older = await db.project.create({
+      data: { ...project(ownerId, "APPROVED"), name: "Older", createdAt: new Date("2026-01-01") },
+    });
+    const newer = await db.project.create({
+      data: { ...project(ownerId, "APPROVED"), name: "Newer", createdAt: new Date("2026-02-01") },
+    });
+    await db.project.create({ data: project(ownerId, "PENDING") });
+    await db.project.create({ data: project(ownerId, "REJECTED") });
+
+    const list = await listApprovedProjects();
+    expect(list.map((p) => p.id)).toEqual([newer.id, older.id]);
+  });
+
+  it("has every field the list shows", async () => {
+    await db.project.create({ data: project(ownerId, "APPROVED") });
+    const [item] = await listApprovedProjects();
+    expect(Object.keys(item).sort()).toEqual(
+      ["category", "description", "expectedReturn", "id", "name", "requiredAmount", "status"],
+    );
+  });
+
+  it("returns an empty list when nothing is approved", async () => {
+    await db.project.create({ data: project(ownerId, "PENDING") });
+    expect(await listApprovedProjects()).toEqual([]);
+  });
+});
+
+describe("truncate", () => {
+  it("leaves short text alone", () => {
+    expect(truncate("Short text", 20)).toBe("Short text");
+  });
+
+  it("cuts long text at a space and adds an ellipsis", () => {
+    expect(truncate("one two three four five", 12)).toBe("one two…");
   });
 });

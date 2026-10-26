@@ -9,9 +9,14 @@ export async function Navbar() {
   return (
     <header className="border-b border-slate-200 bg-white">
       <nav className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 text-sm">
-        <Link href="/" className="font-semibold">
-          Investment Matching Platform
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="font-semibold">
+            Investment Matching Platform
+          </Link>
+          <Link href="/projects" className="text-slate-600 hover:text-slate-900">
+            Projects
+          </Link>
+        </div>
         {user ? (
           <div className="flex items-center gap-3">
             <span className="text-slate-600">
