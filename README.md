@@ -21,7 +21,7 @@ A web platform that connects investors with project owners. Project owners publi
 | Feature | Jira | Status |
 | --- | --- | --- |
 | User registration | DEV-3 | Done |
-| Project details page | DEV-6 | In review ([#6](https://github.com/Komil484/investment-platform/pull/6)) |
+| Project details page | DEV-6 | Done |
 | User login | DEV-4 | Planned |
 | Browse projects | DEV-5 | Planned |
 | Create and edit projects | DEV-7, DEV-8 | Planned |
@@ -36,10 +36,6 @@ You need Node.js 22 and npm. With [mise](https://mise.jdx.dev) installed, `mise 
 ```bash
 git clone git@github.com:Komil484/investment-platform.git
 cd investment-platform
-
-# The project page and demo data are still in review.
-# Until #6 is merged, check out its branch:
-git checkout DEV-6-project-details
 
 cp .env.example .env    # points Prisma at prisma/dev.db
 npm install             # also generates the Prisma client
