@@ -1,4 +1,4 @@
-// SQLite has no native enums, so the role column is a string.
+// SQLite has no native enums, so role/status columns are strings.
 // Allowed values live in src/lib/constants.ts and are enforced by zod.
 
 generator client {
@@ -11,10 +11,28 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   name         String
-  email        String   @unique
+  email        String    @unique
   passwordHash String
   role         String // INVESTOR | OWNER
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
+  projects     Project[]
+}
+
+model Project {
+  id             String   @id @default(cuid())
+  name           String
+  description    String
+  category       String
+  requiredAmount Int // whole USD
+  expectedReturn Float // expected annual return, percent
+  status         String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  ownerId        String
+  owner          User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status])
+  @@index([ownerId])
 }
