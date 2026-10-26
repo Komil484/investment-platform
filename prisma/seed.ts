@@ -16,44 +16,49 @@ async function main() {
     },
   });
 
-  if ((await db.project.count()) === 0) {
-    await db.project.createMany({
-      data: [
-        {
-          ownerId: owner.id,
-          name: "Rooftop Solar for Small Businesses",
-          category: "Energy",
-          requiredAmount: 120000,
-          expectedReturn: 14,
-          status: "APPROVED",
-          description:
-            "We install and maintain rooftop solar panels for small shops and workshops on a lease model. " +
-            "Customers pay a fixed monthly fee lower than their current electricity bill, and we keep the " +
-            "energy credits. Funding will cover equipment for the first 40 installations.",
-        },
-        {
-          ownerId: owner.id,
-          name: "Farm-to-Table Delivery App",
-          category: "Agriculture",
-          requiredAmount: 45000,
-          expectedReturn: 22.5,
-          status: "APPROVED",
-          description:
-            "A mobile app connecting local farmers directly with households and restaurants. Farmers list " +
-            "produce daily; we handle ordering, payments and same-day delivery through partner couriers.",
-        },
-        {
-          ownerId: owner.id,
-          name: "Coding Bootcamp for Teenagers",
-          category: "Education",
-          requiredAmount: 30000,
-          expectedReturn: 10,
-          status: "PENDING",
-          description:
-            "Weekend programming courses for students aged 13–17, focusing on web development and " +
-            "practical projects. Funds go toward classroom rental, laptops, and instructor salaries.",
-        },
-      ],
+  // Fixed ids keep the demo URLs the same on every machine (see README).
+  const projects = [
+    {
+      id: "rooftop-solar",
+      name: "Rooftop Solar for Small Businesses",
+      category: "Energy",
+      requiredAmount: 120000,
+      expectedReturn: 14,
+      status: "APPROVED",
+      description:
+        "We install and maintain rooftop solar panels for small shops and workshops on a lease model. " +
+        "Customers pay a fixed monthly fee lower than their current electricity bill, and we keep the " +
+        "energy credits. Funding will cover equipment for the first 40 installations.",
+    },
+    {
+      id: "farm-to-table",
+      name: "Farm-to-Table Delivery App",
+      category: "Agriculture",
+      requiredAmount: 45000,
+      expectedReturn: 22.5,
+      status: "APPROVED",
+      description:
+        "A mobile app connecting local farmers directly with households and restaurants. Farmers list " +
+        "produce daily; we handle ordering, payments and same-day delivery through partner couriers.",
+    },
+    {
+      id: "coding-bootcamp",
+      name: "Coding Bootcamp for Teenagers",
+      category: "Education",
+      requiredAmount: 30000,
+      expectedReturn: 10,
+      status: "PENDING",
+      description:
+        "Weekend programming courses for students aged 13–17, focusing on web development and " +
+        "practical projects. Funds go toward classroom rental, laptops, and instructor salaries.",
+    },
+  ];
+
+  for (const project of projects) {
+    await db.project.upsert({
+      where: { id: project.id },
+      update: {},
+      create: { ...project, ownerId: owner.id },
     });
   }
 
