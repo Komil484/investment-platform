@@ -15,7 +15,6 @@
 
 # next.js
 /.next/
-/.next-prod/
 /out/
 
 # production
@@ -41,10 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# sqlite
-/prisma/*.db
-/prisma/*.db-journal
-
 !.env.example
-!.env.production.example
-!.env.test
