@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 
+import type { UpdateProjectInput } from "@/lib/validation";
+
 // US-03 / FR-4: only approved projects are visible to investors.
 export async function getApprovedProject(id: string) {
   return db.project.findFirst({
@@ -23,4 +25,79 @@ export async function listApprovedProjects() {
       status: true,
     },
   });
+}
+
+/**
+ * List projects belonging to a specific owner.
+ * Includes pending, approved, and rejected projects.
+ */
+export async function listOwnerProjects(ownerId: string) {
+  return db.project.findMany({
+    where: { ownerId },
+    orderBy: { updatedAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      category: true,
+      requiredAmount: true,
+      expectedReturn: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+}
+
+/**
+ * Retrieve a project for editing.
+ * Only the owner of a pending project can retrieve it.
+ */
+export async function getEditableProject(
+  projectId: string,
+  ownerId: string,
+) {
+  return db.project.findFirst({
+    where: {
+      id: projectId,
+      ownerId,
+      status: "PENDING",
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      category: true,
+      requiredAmount: true,
+      expectedReturn: true,
+      status: true,
+    },
+  });
+}
+
+/**
+ * Update details only when the project still belongs to
+ * the specified owner and remains pending.
+ */
+export async function updatePendingProject(
+  projectId: string,
+  ownerId: string,
+  input: UpdateProjectInput,
+) {
+  const result = await db.project.updateMany({
+    where: {
+      id: projectId,
+      ownerId,
+      status: "PENDING",
+    },
+    data: {
+      name: input.name,
+      description: input.description,
+      category: input.category,
+      requiredAmount: input.requiredAmount,
+      expectedReturn: input.expectedReturn,
+    },
+  });
+
+  return result.count === 1;
 }

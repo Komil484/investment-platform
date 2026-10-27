@@ -16,6 +16,11 @@ export async function Navbar() {
           <Link href="/projects" className="text-slate-600 hover:text-slate-900">
             Projects
           </Link>
+          {user?.role === "OWNER" && (
+            <Link href="/my-projects">
+              My Projects
+            </Link>
+          )}
         </div>
         {user ? (
           <div className="flex items-center gap-3">
