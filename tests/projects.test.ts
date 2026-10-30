@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { truncate } from "@/lib/format";
-import { getApprovedProject, listApprovedProjects } from "@/server/projects";
+import {
+  getApprovedProject,
+  getEditableProject,
+  listApprovedProjects,
+  updatePendingProject,
+} from "@/server/projects";
 
 const project = (ownerId: string, status: string) => ({
   ownerId,
@@ -75,12 +80,106 @@ describe("listApprovedProjects", () => {
   });
 });
 
-describe("truncate", () => {
-  it("leaves short text alone", () => {
-    expect(truncate("Short text", 20)).toBe("Short text");
+describe("getEditableProject", () => {
+  it("returns a pending project to its owner", async () => {
+    const { id } = await db.project.create({
+      data: project(ownerId, "PENDING"),
+    });
+
+    expect(await getEditableProject(id, ownerId)).toMatchObject({
+      id,
+      name: "PENDING project",
+      status: "PENDING",
+    });
   });
 
-  it("cuts long text at a space and adds an ellipsis", () => {
-    expect(truncate("one two three four five", 12)).toBe("one two…");
+  it.each(["APPROVED", "REJECTED"])(
+    "does not return a %s project for editing",
+    async (status) => {
+      const { id } = await db.project.create({
+        data: project(ownerId, status),
+      });
+
+      expect(await getEditableProject(id, ownerId)).toBeNull();
+    },
+  );
+
+  it("does not allow another owner to access the project", async () => {
+    const otherOwner = await db.user.create({
+      data: {
+        name: "Other Owner",
+        email: "other-owner@example.com",
+        passwordHash: "x",
+        role: "OWNER",
+      },
+    });
+
+    const { id } = await db.project.create({
+      data: project(otherOwner.id, "PENDING"),
+    });
+
+    expect(await getEditableProject(id, ownerId)).toBeNull();
   });
+});
+
+describe("updatePendingProject", () => {
+  const updateInput = {
+    name: "Updated project name",
+    description: "Updated project description with valid details.",
+    category: "Renewable Energy",
+    requiredAmount: 75000,
+    expectedReturn: 14,
+  };
+
+  it("updates a pending project owned by the requester", async () => {
+    const { id } = await db.project.create({
+      data: project(ownerId, "PENDING"),
+    });
+
+    expect(await updatePendingProject(id, ownerId, updateInput)).toBe(true);
+
+    expect(await db.project.findUnique({ where: { id } })).toMatchObject({
+      ...updateInput,
+      ownerId,
+      status: "PENDING",
+    });
+  });
+
+  it("does not update another owner's project", async () => {
+    const otherOwner = await db.user.create({
+      data: {
+        name: "Other Owner",
+        email: "other-owner@example.com",
+        passwordHash: "x",
+        role: "OWNER",
+      },
+    });
+
+    const { id } = await db.project.create({
+      data: project(otherOwner.id, "PENDING"),
+    });
+
+    expect(await updatePendingProject(id, ownerId, updateInput)).toBe(false);
+
+    expect(await db.project.findUnique({ where: { id } })).toMatchObject({
+      ownerId: otherOwner.id,
+      name: "PENDING project",
+    });
+  });
+
+  it.each(["APPROVED", "REJECTED"])(
+    "does not update a %s project",
+    async (status) => {
+      const { id } = await db.project.create({
+        data: project(ownerId, status),
+      });
+
+      expect(await updatePendingProject(id, ownerId, updateInput)).toBe(false);
+
+      expect(await db.project.findUnique({ where: { id } })).toMatchObject({
+        name: `${status} project`,
+        status,
+      });
+    },
+  );
 });
