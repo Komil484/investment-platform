@@ -17,6 +17,8 @@ export function ProposalForm({ projectId }: { projectId: string }) {
   }
 
   const fieldErrors = state.status === "error" ? state.fieldErrors : undefined;
+  // React clears the form after each submit, so put back what the investor typed.
+  const values = state.status === "error" ? state.values : undefined;
 
   return (
     <form action={formAction} className="space-y-4">
@@ -25,14 +27,32 @@ export function ProposalForm({ projectId }: { projectId: string }) {
         <label htmlFor="amount" className="label">
           Proposed investment (USD)
         </label>
-        <input id="amount" name="amount" type="number" required min={1} step={1} className="input" />
+        <input
+          id="amount"
+          name="amount"
+          type="number"
+          required
+          min={1}
+          step={1}
+          defaultValue={values?.amount}
+          className="input"
+        />
         <FieldError messages={fieldErrors?.amount} />
       </div>
       <div>
         <label htmlFor="message" className="label">
           Message to the project owner
         </label>
-        <textarea id="message" name="message" required minLength={10} maxLength={1000} rows={4} className="input" />
+        <textarea
+          id="message"
+          name="message"
+          required
+          minLength={10}
+          maxLength={1000}
+          rows={4}
+          defaultValue={values?.message}
+          className="input"
+        />
         <FieldError messages={fieldErrors?.message} />
       </div>
       {state.status === "error" && (
