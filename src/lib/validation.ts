@@ -52,6 +52,9 @@ export const updateProjectSchema = z.object({
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 
 
+// Creating a project needs the same fields as editing one.
+export const createProjectSchema = updateProjectSchema;
+export type CreateProjectInput = UpdateProjectInput;
 // Investment proposal validation schema
 export const proposalSchema = z.object({
   amount: z

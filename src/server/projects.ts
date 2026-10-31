@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 
-import type { UpdateProjectInput } from "@/lib/validation";
+import type { CreateProjectInput,UpdateProjectInput } from "@/lib/validation";
 
 // US-03 / FR-4: only approved projects are visible to investors.
 export async function getApprovedProject(id: string) {
@@ -101,4 +101,21 @@ export async function updatePendingProject(
   });
 
   return result.count === 1;
+}
+
+
+// US-05 / FR-5: an owner creates a project. It starts as PENDING until an administrator reviews it.
+export async function createProject(ownerId: string, input: CreateProjectInput) {
+  return db.project.create({
+    data: {
+      ownerId,
+      status: "PENDING",
+      name: input.name,
+      description: input.description,
+      category: input.category,
+      requiredAmount: input.requiredAmount,
+      expectedReturn: input.expectedReturn,
+    },
+    select: { id: true },
+  });
 }

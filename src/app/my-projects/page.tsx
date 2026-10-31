@@ -50,13 +50,22 @@ export default async function MyProjectsPage() {
           </p>
         </div>
 
-        <Link
-          href="/projects"
-          className="btn-primary inline-flex items-center justify-center"
-        >
-          Browse projects
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/projects/new"
+            className="btn-primary inline-flex items-center justify-center"
+          >
+            Create project
+          </Link>
+          <Link
+            href="/projects"
+            className="btn-secondary inline-flex items-center justify-center"
+          >
+            Browse projects
+          </Link>
+        </div>
       </header>
+     
 
       {projects.length === 0 ? (
         <section className="card mt-8 p-8 text-center">
@@ -66,11 +75,8 @@ export default async function MyProjectsPage() {
           <p className="mt-2 text-sm text-slate-600">
             You have not submitted any projects yet.
           </p>
-          <Link
-            href="/projects"
-            className="mt-5 inline-flex text-sm font-medium text-blue-600 hover:text-blue-800"
-          >
-            Browse projects →
+          <Link href="/projects/new" className="btn-primary mt-5">
+            Create your first project
           </Link>
         </section>
       ) : (
