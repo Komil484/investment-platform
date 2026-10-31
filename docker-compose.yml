@@ -1,12 +1,22 @@
+version: '3.8'
+
 services:
-  web:
-    build: .
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: investment-platform-app
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: "file:/data/prod.db"
-      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET}
+      - NODE_ENV=production
+      - DATABASE_URL=file:./dev.db
+      - JWT_SECRET=production_secret_key_change_me
     volumes:
-      - appdata:/data
-volumes:
-  appdata:
+      - ./prisma:/app/prisma
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
