@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ROLE_LABELS, type UserRole } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
- 
+import { requireRole } from "@/lib/session";
 import { listUsers } from "@/server/admin";
 import { userAdminAction } from "./actions";
 
@@ -20,9 +19,7 @@ const NOTICES: Record<string, { ok: boolean; text: string }> = {
 };
 
 export default async function AdminUsersPage({ searchParams }: Props) {
-  const user = await requireRole("ADMIN");
-  if (!user) redirect("/login");
-  if (user.role !== "ADMIN") notFound();
+  await requireRole("ADMIN");
 
   const { result } = await searchParams;
   const notice = result ? NOTICES[result] : undefined;

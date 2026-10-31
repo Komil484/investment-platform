@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireRole } from "@/lib/session";
 import { setUserVerified, suspendUser } from "@/server/admin";
 
 const ACTIONS = ["verify", "unverify", "suspend"] as const;
@@ -12,10 +13,8 @@ function isUserAction(value: unknown): value is UserAction {
 }
 
 export async function userAdminAction(formData: FormData) {
-const user = await requireRole("ADMIN");
-  if (!user) redirect("/login");
   // Checked again here: hiding the page is not enough, anyone can send a request to this action.
-  if (user.role !== "ADMIN") redirect("/");
+  await requireRole("ADMIN");
 
   const userId = formData.get("userId");
   const action = formData.get("action");

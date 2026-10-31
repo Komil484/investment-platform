@@ -28,8 +28,8 @@ export async function updateProjectAction(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description"),
     category: formData.get("category"),
-    requiredAmount: Number(formData.get("requiredAmount")),
-    expectedReturn: Number(formData.get("expectedReturn")),
+    requiredAmount: formNumber(formData.get("requiredAmount")),
+    expectedReturn: formNumber(formData.get("expectedReturn")),
   });
 
   if (!input.success) {
