@@ -16,7 +16,7 @@ async function main() {
 
   const owner = await upsertUser("owner@example.com", "Omar Owner", "OWNER");
   await upsertUser("investor@example.com", "Ian Investor", "INVESTOR");
-
+  await upsertUser("admin@example.com", "Alex Admin", "ADMIN");
   // Fixed ids keep the demo URLs the same on every machine (see README).
   const projects = [
     {
