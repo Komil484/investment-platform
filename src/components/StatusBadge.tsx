@@ -3,6 +3,7 @@ const styles: Record<string, string> = {
   APPROVED: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   REJECTED: "bg-red-50 text-red-700 ring-red-200",
   ACCEPTED: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  REMOVED: "bg-slate-100 text-slate-600 ring-slate-300",
 };
 
 export function StatusBadge({ status }: { status: string }) {

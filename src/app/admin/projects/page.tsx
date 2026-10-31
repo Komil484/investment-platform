@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { ConfirmButton } from "@/components/ConfirmButton";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatDate, formatMoney, formatPercent } from "@/lib/format";
 import { requireRole } from "@/lib/session";
-import { listApprovedProjectsForAdmin, listPendingProjects } from "@/server/admin";
-import { removeProjectAction, reviewProjectAction } from "./actions";
+import { listApprovedProjectsForAdmin, listPendingProjects, listRemovedProjects } from "@/server/admin";
+import { removeProjectAction, restoreProjectAction, reviewProjectAction } from "./actions";
 
 export const metadata: Metadata = { title: "Review projects" };
 
@@ -13,6 +14,11 @@ const NOTICES: Record<string, { ok: boolean; text: string }> = {
   approved: { ok: true, text: "Project approved. It is now visible to investors." },
   rejected: { ok: true, text: "Project rejected. It stays hidden from investors." },
   removed: { ok: true, text: "Project removed. It is no longer visible to investors." },
+  restored: { ok: true, text: "Project restored. It is back in the review queue as Pending." },
+  "not-restored": {
+    ok: false,
+    text: "That project could not be restored. It may already be restored, or its owner is still suspended.",
+  },
   "already-reviewed": { ok: false, text: "That project was already handled, so nothing was changed." },
   invalid: { ok: false, text: "That request was not valid. Please try again." },
 };
@@ -22,7 +28,11 @@ export default async function AdminProjectsPage({ searchParams }: Props) {
 
   const { result } = await searchParams;
   const notice = result ? NOTICES[result] : undefined;
-  const [projects, live] = await Promise.all([listPendingProjects(), listApprovedProjectsForAdmin()]);
+  const [projects, live, removed] = await Promise.all([
+    listPendingProjects(),
+    listApprovedProjectsForAdmin(),
+    listRemovedProjects(),
+  ]);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-12">
@@ -101,10 +111,45 @@ export default async function AdminProjectsPage({ searchParams }: Props) {
               </div>
               <form action={removeProjectAction}>
                 <input type="hidden" name="projectId" value={project.id} />
-                <button type="submit" className="btn-secondary text-red-700">
+                <ConfirmButton
+                  className="btn-secondary text-red-700"
+                  message={`Remove "${project.name}"? Investors will no longer see it.`}
+                >
                   Remove
-                </button>
+                </ConfirmButton>
               </form>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <h2 className="mt-12 text-xl font-semibold">Removed projects</h2>
+      <p className="mt-1 text-sm text-slate-600">
+        Restoring a project puts it back in the review queue as Pending, so it is checked again before investors see it.
+      </p>
+      {removed.length === 0 ? (
+        <p className="card mt-4 p-6 text-center text-slate-600">No removed projects.</p>
+      ) : (
+        <ul className="mt-4 space-y-3">
+          {removed.map((project) => (
+            <li key={project.id} className="card flex flex-wrap items-center justify-between gap-3 p-4">
+              <div className="min-w-0">
+                <p className="font-medium break-words">{project.name}</p>
+                <p className="text-xs text-slate-500">
+                  {project.category} · {formatMoney(project.requiredAmount)} · by {project.owner.name} (
+                  {project.owner.email}) · removed {formatDate(project.updatedAt)}
+                </p>
+              </div>
+              {project.owner.suspended ? (
+                <span className="text-xs text-slate-500">Unsuspend the owner first</span>
+              ) : (
+                <form action={restoreProjectAction}>
+                  <input type="hidden" name="projectId" value={project.id} />
+                  <button type="submit" className="btn-secondary">
+                    Restore
+                  </button>
+                </form>
+              )}
             </li>
           ))}
         </ul>

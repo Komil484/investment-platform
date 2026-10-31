@@ -3,9 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/session";
-import { setUserVerified, suspendUser } from "@/server/admin";
+import { setUserVerified, suspendUser, unsuspendUser } from "@/server/admin";
 
-const ACTIONS = ["verify", "unverify", "suspend"] as const;
+const ACTIONS = ["verify", "unverify", "suspend", "unsuspend"] as const;
 type UserAction = (typeof ACTIONS)[number];
 
 function isUserAction(value: unknown): value is UserAction {
@@ -26,6 +26,7 @@ export async function userAdminAction(formData: FormData) {
   if (action === "verify") updated = await setUserVerified(userId, true);
   if (action === "unverify") updated = await setUserVerified(userId, false);
   if (action === "suspend") updated = await suspendUser(userId);
+  if (action === "unsuspend") updated = await unsuspendUser(userId);
 
   revalidatePath("/admin/users");
   revalidatePath("/projects");
