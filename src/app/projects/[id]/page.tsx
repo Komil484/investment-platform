@@ -74,7 +74,13 @@ export default async function ProjectDetailPage({ params }: Props) {
             </div>
           ) : (
             <div className="mt-3">
-              <ProposalForm projectId={project.id} />
+              {user.verified ? (
+                <ProposalForm projectId={project.id} />
+              ) : (
+                <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                  Your account is waiting for administrator verification before you can invest.
+                </p>
+              )}
             </div>
           )}
         </section>

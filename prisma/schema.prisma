@@ -16,6 +16,8 @@ model User {
   email        String     @unique
   passwordHash String
   role         String // INVESTOR | OWNER | ADMIN
+  verified     Boolean    @default(false)
+  suspended    Boolean    @default(false)
   createdAt    DateTime   @default(now())
   projects     Project[]
   proposals    Proposal[]

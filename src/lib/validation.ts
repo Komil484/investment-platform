@@ -71,3 +71,8 @@ export const proposalSchema = z.object({
 });
 
 export type ProposalInput = z.infer<typeof proposalSchema>;
+
+// An empty form field must not turn into 0, so it becomes NaN and fails validation.
+export function formNumber(value: FormDataEntryValue | null) {
+  return typeof value === "string" && value.trim() !== "" ? Number(value) : NaN;
+}

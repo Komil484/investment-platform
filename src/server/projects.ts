@@ -10,10 +10,25 @@ export async function getApprovedProject(id: string) {
   });
 }
 
-// US-02 / FR-3: the list investors browse. Newest projects come first.
-export async function listApprovedProjects() {
+export type ProjectFilters = {
+  q?: string;
+  category?: string;
+  minAmount?: number;
+  maxAmount?: number;
+  minReturn?: number;
+};
+
+// US-02 / FR-3: the list investors browse, optionally filtered. Newest projects come first.
+export async function listApprovedProjects(filters: ProjectFilters = {}) {
+  const { q, category, minAmount, maxAmount, minReturn } = filters;
   return db.project.findMany({
-    where: { status: "APPROVED" },
+    where: {
+      status: "APPROVED",
+      ...(q ? { OR: [{ name: { contains: q } }, { description: { contains: q } }] } : {}),
+      ...(category ? { category } : {}),
+      requiredAmount: { gte: minAmount, lte: maxAmount },
+      expectedReturn: { gte: minReturn },
+    },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -25,6 +40,17 @@ export async function listApprovedProjects() {
       status: true,
     },
   });
+}
+
+// The categories that appear in the filter drop-down.
+export async function listApprovedCategories() {
+  const rows = await db.project.findMany({
+    where: { status: "APPROVED" },
+    distinct: ["category"],
+    select: { category: true },
+    orderBy: { category: "asc" },
+  });
+  return rows.map((r) => r.category);
 }
 
 /**

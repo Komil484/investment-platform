@@ -4,9 +4,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
-import { updateProjectSchema } from "@/lib/validation";
-import { updatePendingProject } from "@/server/projects";
 
+import { updatePendingProject } from "@/server/projects";
+import { formNumber, updateProjectSchema } from "@/lib/validation";
 export async function updateProjectAction(formData: FormData) {
   const user = await getCurrentUser();
 
@@ -28,8 +28,8 @@ export async function updateProjectAction(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description"),
     category: formData.get("category"),
-    requiredAmount: Number(formData.get("requiredAmount")),
-    expectedReturn: Number(formData.get("expectedReturn")),
+    requiredAmount: formNumber(formData.get("requiredAmount")),
+    expectedReturn: formNumber(formData.get("expectedReturn")),
   });
 
   if (!input.success) {
