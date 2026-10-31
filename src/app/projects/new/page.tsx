@@ -21,7 +21,13 @@ export default async function NewProjectPage() {
         New projects start as Pending. Investors can see yours once an administrator approves it, and you can edit it
         until then.
       </p>
-      <CreateProjectForm />
+      {user.verified ? (
+        <CreateProjectForm />
+      ) : (
+        <p role="status" className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+          Your account is waiting for administrator verification. You can create projects once it is verified.
+        </p>
+      )}
     </main>
   );
 }

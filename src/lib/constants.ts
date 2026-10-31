@@ -12,7 +12,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   ADMIN: "Administrator",
 };
 
-export const PROJECT_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
+export const PROJECT_STATUSES = ["PENDING", "APPROVED", "REJECTED","REMOVED"] as const;
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
 /** The statuses an administrator can give a pending project. `satisfies` fails to compile if one is not a real status. */

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatDate, formatMoney, formatPercent } from "@/lib/format";
-import { getCurrentUser } from "@/lib/session";
-import { listPendingProjects } from "@/server/admin";
-import { reviewProjectAction } from "./actions";
+import { requireRole } from "@/lib/session";
+import { listApprovedProjectsForAdmin, listPendingProjects } from "@/server/admin";
+import { removeProjectAction, reviewProjectAction } from "./actions";
 
 export const metadata: Metadata = { title: "Review projects" };
 
@@ -13,18 +12,17 @@ type Props = { searchParams: Promise<{ result?: string }> };
 const NOTICES: Record<string, { ok: boolean; text: string }> = {
   approved: { ok: true, text: "Project approved. It is now visible to investors." },
   rejected: { ok: true, text: "Project rejected. It stays hidden from investors." },
-  "already-reviewed": { ok: false, text: "That project was already reviewed, so nothing was changed." },
+  removed: { ok: true, text: "Project removed. It is no longer visible to investors." },
+  "already-reviewed": { ok: false, text: "That project was already handled, so nothing was changed." },
   invalid: { ok: false, text: "That request was not valid. Please try again." },
 };
 
 export default async function AdminProjectsPage({ searchParams }: Props) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  if (user.role !== "ADMIN") notFound();
+  await requireRole("ADMIN");
 
   const { result } = await searchParams;
   const notice = result ? NOTICES[result] : undefined;
-  const projects = await listPendingProjects();
+  const [projects, live] = await Promise.all([listPendingProjects(), listApprovedProjectsForAdmin()]);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-12">
@@ -77,6 +75,34 @@ export default async function AdminProjectsPage({ searchParams }: Props) {
                 </button>
                 <button type="submit" name="decision" value="REJECTED" className="btn-secondary">
                   Reject
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <h2 className="mt-12 text-xl font-semibold">Live projects</h2>
+      <p className="mt-1 text-sm text-slate-600">
+        Approved projects investors can see. Remove one if it looks suspicious.
+      </p>
+      {live.length === 0 ? (
+        <p className="card mt-4 p-6 text-center text-slate-600">No live projects.</p>
+      ) : (
+        <ul className="mt-4 space-y-3">
+          {live.map((project) => (
+            <li key={project.id} className="card flex flex-wrap items-center justify-between gap-3 p-4">
+              <div className="min-w-0">
+                <p className="font-medium break-words">{project.name}</p>
+                <p className="text-xs text-slate-500">
+                  {project.category} · {formatMoney(project.requiredAmount)} · by {project.owner.name} (
+                  {project.owner.email}) · {project._count.proposals} proposals
+                </p>
+              </div>
+              <form action={removeProjectAction}>
+                <input type="hidden" name="projectId" value={project.id} />
+                <button type="submit" className="btn-secondary text-red-700">
+                  Remove
                 </button>
               </form>
             </li>

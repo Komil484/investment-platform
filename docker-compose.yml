@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "file:/data/prod.db"
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET}
+    volumes:
+      - appdata:/data
+volumes:
+  appdata:

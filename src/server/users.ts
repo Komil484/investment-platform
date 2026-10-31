@@ -33,6 +33,6 @@ export async function registerUser(data: RegisterInput) {
 // US-01 / FR-2: returns the user if the email and password match, otherwise null.
 export async function authenticate({ email, password }: LoginInput) {
   const user = await db.user.findUnique({ where: { email } });
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) return null;
+if (!user || user.suspended || !(await bcrypt.compare(password, user.passwordHash))) return null;
   return { id: user.id, name: user.name, email: user.email, role: user.role };
 }

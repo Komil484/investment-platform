@@ -1,5 +1,6 @@
-# Stage 1: Dependency & Build Isolation
+# Stage 1: build
 FROM node:22-alpine AS builder
+RUN apk add --no-cache openssl
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
@@ -9,8 +10,9 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
-# Stage 2: Production Execution Runtime
+# Stage 2: run
 FROM node:22-alpine AS runner
+RUN apk add --no-cache openssl
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -25,4 +27,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["npm", "start"]
+# Apply database migrations, then start the app.
+CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]

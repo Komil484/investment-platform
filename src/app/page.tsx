@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ROLE_LABELS, type SignupRole } from "@/lib/constants";
+import { ROLE_LABELS, type UserRole } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/session";
 
 export default async function Home() {
@@ -11,14 +11,14 @@ export default async function Home() {
       {user ? (
         <>
           <p className="text-slate-600">
-            You are logged in as <strong>{user.name}</strong> ({ROLE_LABELS[user.role as SignupRole] ?? user.role}).
+            You are logged in as <strong>{user.name}</strong> ({ROLE_LABELS[user.role as UserRole] ?? user.role}).
           </p>
           <Link href="/projects" className="btn-primary">
             Browse projects
           </Link>
         </>
       ) : (
-        <div className="flex gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
           <Link href="/register" className="btn-primary">
             Create an account
           </Link>

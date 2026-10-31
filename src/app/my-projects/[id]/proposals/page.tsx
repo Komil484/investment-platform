@@ -19,6 +19,7 @@ const NOTICES: Record<string, { ok: boolean; text: string }> = {
   rejected: { ok: true, text: "Proposal rejected. The investor can see the new status." },
   "already-reviewed": { ok: false, text: "That proposal was already decided, so nothing was changed." },
   invalid: { ok: false, text: "That request was not valid. Please try again." },
+  overfunded: { ok: false, text: "Accepting this proposal would raise more than the project needs." },
 };
 
 export default async function ProjectProposalsPage({ params, searchParams }: Props) {
