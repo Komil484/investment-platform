@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ConfirmButton } from "@/components/ConfirmButton";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ROLE_LABELS, type UserRole } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
@@ -14,6 +15,10 @@ const NOTICES: Record<string, { ok: boolean; text: string }> = {
   verify: { ok: true, text: "User verified." },
   unverify: { ok: true, text: "User verification removed." },
   suspend: { ok: true, text: "User suspended. They can no longer log in and their projects were removed." },
+  unsuspend: {
+    ok: true,
+    text: "User unsuspended. They can log in again. Their projects stay removed until you restore them on Review Projects.",
+  },
   failed: { ok: false, text: "Nothing was changed. The user may already be suspended." },
   invalid: { ok: false, text: "That request was not valid. Please try again." },
 };
@@ -82,7 +87,12 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                   <td className="px-4 py-3 whitespace-nowrap text-slate-600">{formatDate(u.createdAt)}</td>
                   <td className="px-4 py-3">
                     {u.suspended ? (
-                      <span className="text-xs text-slate-400">No actions</span>
+                      <form action={userAdminAction}>
+                        <input type="hidden" name="userId" value={u.id} />
+                        <button type="submit" name="action" value="unsuspend" className="btn-secondary">
+                          Unsuspend
+                        </button>
+                      </form>
                     ) : (
                       <form action={userAdminAction} className="flex flex-wrap gap-2">
                         <input type="hidden" name="userId" value={u.id} />
@@ -95,9 +105,14 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                             Verify
                           </button>
                         )}
-                        <button type="submit" name="action" value="suspend" className="btn-secondary text-red-700">
+                        <ConfirmButton
+                          name="action"
+                          value="suspend"
+                          className="btn-secondary text-red-700"
+                          message={`Suspend ${u.name}? They will not be able to log in, and all their projects will be removed.`}
+                        >
                           Suspend
-                        </button>
+                        </ConfirmButton>
                       </form>
                     )}
                   </td>

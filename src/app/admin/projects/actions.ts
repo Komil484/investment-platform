@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { REVIEW_DECISIONS, type ReviewDecision } from "@/lib/constants";
 import { requireRole } from "@/lib/session";
-import { removeProject, reviewPendingProject } from "@/server/admin";
+import { removeProject, restoreProject, reviewPendingProject } from "@/server/admin";
 
 function isReviewDecision(value: unknown): value is ReviewDecision {
   return REVIEW_DECISIONS.some((decision) => decision === value);
@@ -40,4 +40,14 @@ export async function removeProjectAction(formData: FormData) {
   const removed = await removeProject(projectId);
   refresh(projectId);
   redirect(`/admin/projects?result=${removed ? "removed" : "already-reviewed"}`);
+}
+export async function restoreProjectAction(formData: FormData) {
+  await requireRole("ADMIN");
+
+  const projectId = formData.get("projectId");
+  if (typeof projectId !== "string" || !projectId) redirect("/admin/projects?result=invalid");
+
+  const restored = await restoreProject(projectId);
+  refresh(projectId);
+  redirect(`/admin/projects?result=${restored ? "restored" : "not-restored"}`);
 }

@@ -106,3 +106,41 @@ export async function suspendUser(userId: string) {
     return true;
   });
 }
+
+// DEV-45: let a suspended user log in again. Their projects stay removed; restore them one by one if they are fine.
+export async function unsuspendUser(userId: string) {
+  const result = await db.user.updateMany({
+    where: { id: userId, role: { not: "ADMIN" }, suspended: true },
+    data: { suspended: false },
+  });
+  return result.count === 1;
+}
+
+// DEV-45: removed projects, so an admin can bring one back.
+export async function listRemovedProjects() {
+  return db.project.findMany({
+    where: { status: "REMOVED" },
+    orderBy: { updatedAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      category: true,
+      requiredAmount: true,
+      updatedAt: true,
+      owner: { select: { name: true, email: true, suspended: true } },
+    },
+  });
+}
+
+/**
+ * DEV-45: bring back a removed project. It goes back to PENDING, so an admin reviews it again
+ * before investors can see it. A project of a suspended owner stays removed.
+ * Returns true if the project was restored.
+ */
+export async function restoreProject(projectId: string) {
+  const result = await db.project.updateMany({
+    where: { id: projectId, status: "REMOVED", owner: { suspended: false } },
+    data: { status: "PENDING" },
+  });
+  return result.count === 1;
+}
