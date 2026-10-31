@@ -89,3 +89,20 @@ export async function reviewProposal(
   });
   return result.count === 1;
 }
+
+
+// US-04 / FR-10: every proposal an investor has sent, newest first, with the project it belongs to.
+export async function listInvestorProposals(investorId: string) {
+  return db.proposal.findMany({
+    where: { investorId },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      amount: true,
+      message: true,
+      status: true,
+      createdAt: true,
+      project: { select: { id: true, name: true, status: true } },
+    },
+  });
+}
