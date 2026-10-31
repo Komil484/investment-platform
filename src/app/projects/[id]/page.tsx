@@ -3,7 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatDate, formatMoney, formatPercent } from "@/lib/format";
+import { getCurrentUser } from "@/lib/session";
+import { getInvestorProposal } from "@/server/proposals";
 import { getApprovedProject } from "@/server/projects";
+import { ProposalForm } from "./ProposalForm";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -15,6 +18,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProjectDetailPage({ params }: Props) {
   const project = await getApprovedProject((await params).id);
   if (!project) notFound();
+
+  const user = await getCurrentUser();
+  const proposal = user?.role === "INVESTOR" ? await getInvestorProposal(user.id, project.id) : null;
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
@@ -45,6 +51,34 @@ export default async function ProjectDetailPage({ params }: Props) {
         <h2 className="mt-8 font-semibold">About this project</h2>
         <p className="mt-2 whitespace-pre-line text-slate-700">{project.description}</p>
       </article>
+
+      {(!user || user.role === "INVESTOR") && (
+        <section className="card mt-6 p-6">
+          <h2 className="font-semibold">Invest in this project</h2>
+          {!user ? (
+            <p className="mt-2 text-sm text-slate-600">
+              <Link href="/login" className="font-medium text-emerald-700 hover:underline">
+                Log in
+              </Link>{" "}
+              as an investor to submit a proposal.
+            </p>
+          ) : proposal ? (
+            <div className="mt-3 space-y-2 text-sm">
+              <div className="flex items-center gap-3">
+                <span className="text-slate-600">You proposed</span>
+                <strong>{formatMoney(proposal.amount)}</strong>
+                <StatusBadge status={proposal.status} />
+              </div>
+              <p className="whitespace-pre-line text-slate-700">{proposal.message}</p>
+              <p className="text-xs text-slate-500">Sent {formatDate(proposal.createdAt)}</p>
+            </div>
+          ) : (
+            <div className="mt-3">
+              <ProposalForm projectId={project.id} />
+            </div>
+          )}
+        </section>
+      )}
     </main>
   );
 }

@@ -11,28 +11,47 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
+  id           String     @id @default(cuid())
   name         String
-  email        String    @unique
+  email        String     @unique
   passwordHash String
-  role         String // INVESTOR | OWNER
-  createdAt    DateTime  @default(now())
+  role         String // INVESTOR | OWNER | ADMIN
+  createdAt    DateTime   @default(now())
   projects     Project[]
+  proposals    Proposal[]
 }
 
 model Project {
-  id             String   @id @default(cuid())
+  id             String     @id @default(cuid())
   name           String
   description    String
   category       String
   requiredAmount Int // whole USD
   expectedReturn Float // expected annual return, percent
-  status         String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  status         String     @default("PENDING") // PENDING | APPROVED | REJECTED
   ownerId        String
-  owner          User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  owner          User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  proposals      Proposal[]
 
   @@index([status])
   @@index([ownerId])
+}
+
+model Proposal {
+  id         String   @id @default(cuid())
+  amount     Int // proposed investment, whole USD
+  message    String
+  status     String   @default("PENDING") // PENDING | ACCEPTED | REJECTED
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  investorId String
+  investor   User     @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // One proposal per investor per project.
+  @@unique([projectId, investorId])
+  @@index([investorId])
 }

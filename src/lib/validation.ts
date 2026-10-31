@@ -51,3 +51,20 @@ export const updateProjectSchema = z.object({
 
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 
+
+// Investment proposal validation schema
+export const proposalSchema = z.object({
+  amount: z
+    .number({ error: "Enter a valid amount." })
+    .int("Amount must be a whole number.")
+    .min(1, "Amount must be greater than zero.")
+    .max(1_000_000_000, "Amount is too large."),
+
+  message: z
+    .string({ error: "Write a short message to the project owner." })
+    .trim()
+    .min(10, "Message must be at least 10 characters.")
+    .max(1000, "Message cannot exceed 1000 characters."),
+});
+
+export type ProposalInput = z.infer<typeof proposalSchema>;
