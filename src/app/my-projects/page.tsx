@@ -135,6 +135,15 @@ export default async function MyProjectsPage() {
                       Edit project →
                     </Link>
                   )}
+                  
+                  {project.status === "APPROVED" && (
+                    <Link
+                      href={`/my-projects/${project.id}/proposals`}
+                      className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+                    >
+                      View proposals ({project._count.proposals}) →
+                    </Link>
+                  )}
                 </div>
               </div>
             </article>

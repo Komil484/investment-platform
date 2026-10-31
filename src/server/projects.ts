@@ -45,6 +45,7 @@ export async function listOwnerProjects(ownerId: string) {
       status: true,
       createdAt: true,
       updatedAt: true,
+      _count: { select: { proposals: true } },
     },
   });
 }

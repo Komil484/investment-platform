@@ -43,3 +43,29 @@ export async function getInvestorProposal(investorId: string, projectId: string)
     select: { amount: true, message: true, status: true, createdAt: true },
   });
 }
+
+
+// US-07 / FR-8: a project owner's view of the proposals sent to one of their projects.
+// Returns null if the project does not exist or belongs to someone else. Newest proposals come first.
+export async function getOwnerProjectProposals(projectId: string, ownerId: string) {
+  return db.project.findFirst({
+    where: { id: projectId, ownerId },
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      requiredAmount: true,
+      proposals: {
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          amount: true,
+          message: true,
+          status: true,
+          createdAt: true,
+          investor: { select: { name: true, email: true } },
+        },
+      },
+    },
+  });
+}
