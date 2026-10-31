@@ -7,15 +7,10 @@ import { EditProjectForm } from "./EditProjectForm";
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
 };
 
-export default async function EditProjectPage({
-  params,
-  searchParams,
-}: Props) {
+export default async function EditProjectPage({ params }: Props) {
   const { id } = await params;
-  const { error } = await searchParams;
 
   const user = await getCurrentUser();
 
@@ -52,7 +47,7 @@ export default async function EditProjectPage({
       </div>
 
       <div className="card mt-6 p-6">
-        <EditProjectForm project={project} error={error} />
+        <EditProjectForm project={project} />
       </div>
     </main>
   );

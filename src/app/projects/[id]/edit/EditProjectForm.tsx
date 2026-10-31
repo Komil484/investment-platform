@@ -1,56 +1,58 @@
+"use client";
 
-import { updateProjectAction } from "./actions";
-
-type ProjectFormData = {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  requiredAmount: number;
-  expectedReturn: number;
-};
+import Link from "next/link";
+import { useActionState } from "react";
+import { updateProjectAction, type EditProjectState } from "./actions";
 
 type Props = {
-  project: ProjectFormData;
-  error?: string;
+  project: {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    requiredAmount: number;
+    expectedReturn: number;
+  };
 };
 
-export function EditProjectForm({ project, error }: Props) {
+const initialState: EditProjectState = { status: "idle" };
+
+export function EditProjectForm({ project }: Props) {
+  const [state, formAction, pending] = useActionState(updateProjectAction, initialState);
+  const fieldErrors = state.status === "error" ? state.fieldErrors : undefined;
+  // React clears the form after each submit, so after an error show what the owner typed,
+  // otherwise the saved project.
+  const values =
+    state.status === "error"
+      ? state.values
+      : {
+          name: project.name,
+          description: project.description,
+          category: project.category,
+          requiredAmount: String(project.requiredAmount),
+          expectedReturn: String(project.expectedReturn),
+        };
+
   return (
-    <form action={updateProjectAction} className="space-y-5">
+    <form action={formAction} className="space-y-4">
       <input type="hidden" name="projectId" value={project.id} />
-
-      {error && (
-        <div
-          role="alert"
-          className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
-        >
-          {error === "invalid-input"
-            ? "Please check your entries and try again."
-            : error === "not-editable"
-              ? "This project can no longer be edited. It may have been approved or its ownership changed."
-              : "Something went wrong. Please try again."}
-        </div>
-      )}
-
       <div>
-        <label htmlFor="name" className="mb-1 block text-sm font-medium">
+        <label htmlFor="name" className="label">
           Project name
         </label>
         <input
           id="name"
           name="name"
-          type="text"
           required
           minLength={3}
           maxLength={150}
-          defaultValue={project.name}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2"
+          defaultValue={values.name}
+          className="input"
         />
+        <FieldError messages={fieldErrors?.name} />
       </div>
-
       <div>
-        <label htmlFor="description" className="mb-1 block text-sm font-medium">
+        <label htmlFor="description" className="label">
           Description
         </label>
         <textarea
@@ -60,32 +62,29 @@ export function EditProjectForm({ project, error }: Props) {
           minLength={20}
           maxLength={5000}
           rows={6}
-          defaultValue={project.description}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2"
+          defaultValue={values.description}
+          className="input"
         />
+        <p className="mt-1 text-xs text-slate-500">At least 20 characters.</p>
+        <FieldError messages={fieldErrors?.description} />
       </div>
-
       <div>
-        <label htmlFor="category" className="mb-1 block text-sm font-medium">
+        <label htmlFor="category" className="label">
           Category
         </label>
         <input
           id="category"
           name="category"
-          type="text"
           required
           minLength={2}
           maxLength={100}
-          defaultValue={project.category}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2"
+          defaultValue={values.category}
+          className="input"
         />
+        <FieldError messages={fieldErrors?.category} />
       </div>
-
       <div>
-        <label
-          htmlFor="requiredAmount"
-          className="mb-1 block text-sm font-medium"
-        >
+        <label htmlFor="requiredAmount" className="label">
           Required investment (USD)
         </label>
         <input
@@ -95,16 +94,13 @@ export function EditProjectForm({ project, error }: Props) {
           required
           min={1}
           step={1}
-          defaultValue={project.requiredAmount}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2"
+          defaultValue={values.requiredAmount}
+          className="input"
         />
+        <FieldError messages={fieldErrors?.requiredAmount} />
       </div>
-
       <div>
-        <label
-          htmlFor="expectedReturn"
-          className="mb-1 block text-sm font-medium"
-        >
+        <label htmlFor="expectedReturn" className="label">
           Expected annual return (%)
         </label>
         <input
@@ -115,23 +111,29 @@ export function EditProjectForm({ project, error }: Props) {
           min={0}
           max={100}
           step="any"
-          defaultValue={project.expectedReturn}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2"
+          defaultValue={values.expectedReturn}
+          className="input"
         />
+        <FieldError messages={fieldErrors?.expectedReturn} />
       </div>
-
+      {state.status === "error" && (
+        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          {state.message}
+        </p>
+      )}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" className="btn-primary">
-          Save changes
+        <button type="submit" disabled={pending} className="btn-primary">
+          {pending ? "Saving…" : "Save changes"}
         </button>
-
-        <a
-          href="/my-projects"
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium"
-        >
+        <Link href="/my-projects" className="btn-secondary">
           Cancel
-        </a>
+        </Link>
       </div>
     </form>
   );
+}
+
+function FieldError({ messages }: { messages?: string[] }) {
+  if (!messages?.length) return null;
+  return <p className="mt-1 text-xs text-red-600">{messages[0]}</p>;
 }
