@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import type { ProposalDecision } from "@/lib/constants";
 import type { ProposalInput } from "@/lib/validation";
 
 export class ProposalNotAllowedError extends Error {
@@ -68,4 +69,23 @@ export async function getOwnerProjectProposals(projectId: string, ownerId: strin
       },
     },
   });
+}
+
+
+/**
+ * US-07 / FR-10: the owner of a project accepts or rejects a proposal sent to it.
+ * Only a PENDING proposal on the owner's own project can be changed, and a decision is final.
+ * Returns true if the proposal was updated.
+ */
+export async function reviewProposal(
+  ownerId: string,
+  projectId: string,
+  proposalId: string,
+  decision: ProposalDecision,
+) {
+  const result = await db.proposal.updateMany({
+    where: { id: proposalId, projectId, status: "PENDING", project: { ownerId } },
+    data: { status: decision },
+  });
+  return result.count === 1;
 }
