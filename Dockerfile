@@ -23,9 +23,12 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
 
+# The production database lives here, in a volume (see docker-compose.yml).
+RUN mkdir -p /app/data
+
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Apply database migrations, then start the app.
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+# Stop straight away if the login secret is missing, then apply migrations and start the app.
+CMD ["sh", "-c", "if [ -z \"$AUTH_SECRET\" ]; then echo 'AUTH_SECRET is not set. Add it to .env.production.' >&2; exit 1; fi; npx prisma migrate deploy && npm start"]
