@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { PROPOSAL_DECISIONS, type ProposalDecision } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/session";
-import { reviewProposal } from "@/server/proposals";
+import { ProposalOverfundedError, reviewProposal } from "@/server/proposals";
 
 function isProposalDecision(value: unknown): value is ProposalDecision {
   return PROPOSAL_DECISIONS.some((decision) => decision === value);
@@ -26,10 +26,18 @@ export async function reviewProposalAction(formData: FormData) {
     redirect(`${page}?result=invalid`);
   }
 
-  const updated = await reviewProposal(user.id, projectId, proposalId, decision);
+  // redirect() works by throwing, so it stays outside the try block.
+  let result: string;
+  try {
+    const updated = await reviewProposal(user.id, projectId, proposalId, decision);
+    result = updated ? decision.toLowerCase() : "already-reviewed";
+  } catch (err) {
+    if (!(err instanceof ProposalOverfundedError)) throw err;
+    result = "overfunded";
+  }
 
   revalidatePath(page);
   revalidatePath(`/projects/${projectId}`);
 
-  redirect(`${page}?result=${updated ? decision.toLowerCase() : "already-reviewed"}`);
+  redirect(`${page}?result=${result}`);
 }
