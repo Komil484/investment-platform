@@ -17,6 +17,9 @@ export async function submitProposalAction(_prev: ProposalState, formData: FormD
   if (!user) redirect("/login");
   // Checked here as well as in the page: anyone can send a request to this action.
   if (user.role !== "INVESTOR") return { status: "error", message: "Only investors can submit proposals." };
+  if (!user.verified) {
+    return { status: "error", message: "Your account must be verified by an administrator before you can invest." };
+  }
 
   const projectId = formData.get("projectId");
   if (typeof projectId !== "string" || !projectId) {

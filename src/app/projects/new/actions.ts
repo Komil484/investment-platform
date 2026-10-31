@@ -23,6 +23,12 @@ export async function createProjectAction(
   if (!user) redirect("/login");
   // Checked here as well as in the page: anyone can send a request to this action.
   if (user.role !== "OWNER") redirect("/projects");
+  if (!user.verified) {
+    return {
+      status: "error",
+      message: "Your account must be verified by an administrator before you can create projects.",
+    };
+  }
 
   const parsed = createProjectSchema.safeParse({
     name: formData.get("name"),
